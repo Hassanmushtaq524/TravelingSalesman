@@ -5,14 +5,81 @@
 #include <dirent.h>
 using namespace std;
 
+// Input:
+// Output: returns the node closest to the current Node
+int minDistanceNode(int curNode, vector<double> &x, vector<double> &y, vector<int> &route, double &cost) {
+    int n = x.size();
+    double min = 999999;
+    int minNode = 0;
+    double distance;
+    for (int i = 0; i < n; i++) {
+        // if node is current Node or is already in the route, then we skip
+        if (i == curNode || find(route.begin(), route.end(), i) != route.end()) {
+            continue;
+        }
+
+        distance = pow(x[curNode] - x[i], 2) + pow(y[curNode] - y[i], 2);
+        distance = sqrt(distance);
+
+        // if smaller distance found, change minNode and min
+        if (distance < min) {
+            min = distance;
+            minNode = i;
+        }
+
+    }
+    cost += min;
+    return minNode;
+}
+
+// Input: 
+// Output: returns the minimum cost to traverse the nodes
+double travelSales(vector<double> &x, vector<double> &y, vector<int> &route) {
+    // the starting node
+    int initialNode = 0;
+    // the minimum cost
+    double cost = 0;
+    // add the initial node to our cost
+    route.push_back(initialNode);
+    int node = initialNode;
+
+    // loop until we reach the end
+    while (route.size() != x.size()) {
+        node = minDistanceNode(node, x, y, route, cost);
+        route.push_back(node);
+    }
+
+    // calculate final return distance
+    double distance;
+    distance = pow(x[node] - x[0], 2) + pow(y[node] - y[0], 2);
+    distance = sqrt(distance);
+    cost += distance;
+    route.push_back(initialNode);
+    return cost; 
+}
 
 
 // Input: fin = pointer to ifstream object, fout = pointer to ofstream object
 // Output: prints travelling salesman solution
 void solve(ifstream &fin, ofstream &fout) {
     
-  
+    int n; // number of nodes
+    fin >> n;
+    vector<double> x; // holds x values of nodes
+    vector<double> y; // holds y values of nodes
 
+    double xVal, yVal;
+    while (n--) {
+        fin >> xVal >> yVal;
+        x.push_back(xVal);
+        y.push_back(yVal);
+    }
+
+    vector<int> route;
+    fout << travelSales(x, y, route) << endl;
+    for (auto x : route) {
+        fout << x << " ";
+    }
 }
 
 
@@ -39,7 +106,6 @@ int main () {
     for (auto file : files) {
         if (file == "." || file == "..")
             continue;
-        cout << file << " "; 
         inFile = "./inputs/" + file;
         fin.open(inFile.data(), ios::in);
         outFile = "./outputs/" + file + "_out"; 
@@ -47,6 +113,7 @@ int main () {
         solve(fin, fout);
         fin.close();
         fout.close();
+        cout << file << " tested!" << endl; 
     }
 
     
