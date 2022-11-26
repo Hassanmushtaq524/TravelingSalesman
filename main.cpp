@@ -5,14 +5,95 @@
 #include <dirent.h>
 using namespace std;
 
+double nextDouble(default_random_engine &generator, uniform_real_distribution<double> &distribution) {
+    return distribution(generator);
+}
 
+double nodeDistance(int node1, int node2, vector<double> &x, vector<double> &y) {
+    return sqrt(pow(x[node1] - x[node2], 2) + pow(y[node1] - y[node2], 2));
+}
+
+double getDistance(vector<int> &route,  vector<double> &x, vector<double> &y) {
+    int n = route.size();
+    double d = 0;
+    for (int i = 1; i < n; i++) {
+        d += nodeDistance(i-1, i, x, y);
+    }
+    return d;
+}
+
+void generateNewOrder(vector<int> &route, vector<double> &x, vector<double> &y) {
+    int n = x.size();
+    int i1 = (rand() % (n-1)) + 1, i2 = (rand() % (n-1)) + 1;
+    // cout << i1 << " " << i2 << endl;
+    // perform two random swaps
+    // it is important that the starting and ending node are 0;
+    swap(route[i1], route[i2]);
+} 
+
+double Anneal(vector<int> &order,  vector<double> &x, vector<double> &y) {
+    srand(unsigned(time(NULL)));
+    default_random_engine generator;
+    uniform_real_distribution<double> distribution(0.0,1.0);
+    // store current and original order
+    vector<int> currentOrder(order);
+    vector<int> originalOrder;
+    double distance0, distance1;
+    double T = 1e50;
+    double deltaT = 0.99;
+    double absoluteT = 0.0001;
+    double difference, minDistance;
+    distance0 = getDistance(currentOrder, x, y);
+    while (T > absoluteT) {
+        // copy original order
+        originalOrder = currentOrder;
+        // randomize it
+        generateNewOrder(currentOrder, x, y);
+        // get new distance of the new permutation
+        distance1 = getDistance(currentOrder, x, y);
+        difference = distance1 - distance0;
+        // keep new order based on a probability, otherwise revert back
+        if (difference < 0 ||  exp((-1*difference)/T) > nextDouble(generator, distribution)) {
+            //  keeping new order
+           distance0 = distance1;
+        } else {
+            currentOrder = originalOrder;
+        }
+        T *= deltaT;
+    }
+    order = currentOrder;
+    minDistance = distance0;
+    return minDistance;
+}
 
 // Input: fin = pointer to ifstream object, fout = pointer to ofstream object
 // Output: prints travelling salesman solution
 void solve(ifstream &fin, ofstream &fout) {
     
-  
+    int n;
+    fin >> n;
+    // x and y vector hold x and y values of point
+    vector<double> x;
+    vector<double> y;
+    double xVal, yVal;
+    for (int i = 0; i < n; i++) {
+        fin >> xVal >> yVal;
+        x.push_back(xVal);
+        y.push_back(yVal);
+    }
 
+    // initial order is nodes 0->1...n->0
+    vector<int> order(n, 0);
+    for (int i = 0; i < n; i++) {
+        order[i] = i;
+    }
+    order.push_back(0);
+
+    double shortestDistance = Anneal(order, x, y);
+    fout << shortestDistance << endl;
+    for (auto x : order) {
+        fout << x << " ";
+    }
 }
 
 
@@ -36,19 +117,26 @@ int main () {
     ifstream fin;
     ofstream fout;   
     string inFile, outFile;       
-    for (auto file : files) {
-        if (file == "." || file == "..")
-            continue;
-        cout << file << " "; 
-        inFile = "./inputs/" + file;
+    // for (auto file : files) {
+    //     if (file == "." || file == "..")
+    //         continue;
+    //     cout << file << " "; 
+    //     inFile = "./inputs/" + file;
+    //     fin.open(inFile.data(), ios::in);
+    //     outFile = "./outputs/" + file + "_out"; 
+    //     fout.open(outFile.data(), ios::out);
+    //     solve(fin, fout);
+    //     fin.close();
+    //     fout.close();
+    // }
+    inFile = "./inputs/sampleInput";
         fin.open(inFile.data(), ios::in);
-        outFile = "./outputs/" + file + "_out"; 
+        outFile = "./outputs/sampleInput_out"; 
         fout.open(outFile.data(), ios::out);
         solve(fin, fout);
         fin.close();
         fout.close();
-    }
-
+    
     
     
 }
