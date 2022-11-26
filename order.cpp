@@ -38,10 +38,11 @@ double Order::getDistance() {
 
 void Order::randomize() {
     // switch two cities
-    int n = tour.size();
-    int i1 = rand() % n, i2 = rand() % n; 
-    // swap
-    swap(tour[i1], tour[i2]);
+    // int n = tour.size();
+    // int i1 = rand() % n, i2 = rand() % n; 
+    // // swap
+    // swap(tour[i1], tour[i2]);
+    random_shuffle(tour.begin(), tour.end());
 }
 
 void Order::print() {

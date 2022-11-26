@@ -14,11 +14,11 @@ double nextDouble() {
 }
 
 double Anneal(vector<Coord> &path) {
-    srand(unsigned(time(0)));
+    srand(unsigned(time(NULL)));
     Order currentOrder(path);
     
     double distance0, distance1;
-    double T = 10000.0;
+    double T = 1000000.0;
     double deltaT = 0.99;
     double absoluteT = 0.0001;
     double difference, minDistance;
@@ -33,7 +33,7 @@ double Anneal(vector<Coord> &path) {
         distance1 = currentOrder.getDistance();
         difference = distance1 - distance0;
         // keep new order based on a probability, otherwise revert back
-        if (difference < 0 || exp((-difference)/T) < nextDouble()) {
+        if (difference < 0 ) {
             //  keeping new order
            distance0 = distance1;
         } else {
