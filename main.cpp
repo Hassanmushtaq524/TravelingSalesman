@@ -68,6 +68,14 @@ double Anneal(vector<int> &order,  vector<double> &x, vector<double> &y) {
     return minDistance;
 }
 
+int shortestNode(int node, vector<double> &x, vector<double> &y) {
+    
+}
+
+void greedyOrder(vector<int> &order, vector<double> &x, vector<double> &y) {
+
+}
+
 // Input: fin = pointer to ifstream object, fout = pointer to ofstream object
 // Output: prints travelling salesman solution
 void solve(ifstream &fin, ofstream &fout) {
@@ -90,20 +98,21 @@ void solve(ifstream &fin, ofstream &fout) {
 
     // we will perform 10 iterations, and restarting each time
     double currentDistance, shortestDistance = DBL_MAX;
-    for (int i = 0; i < 10; i++) {
-        // restart
+    // for (int i = 0; i < 10; i++) {
+    //     // restart
         order.clear();
         for (int i = 0; i < n; i++) {
             order.push_back(i);
         }
         order.push_back(0);
+        greedyOrder(order, x, y);
         currentDistance = Anneal(order, x, y);
-        if (currentDistance < shortestDistance) {
-            shortestDistance = currentDistance;
-        }
-    }
+        // if (currentDistance < shortestDistance) {
+        //     shortestDistance = currentDistance;
+        // }
+    // }
 
-    fout << shortestDistance << endl;
+    fout << currentDistance << endl;
     for (auto x : order) {
         fout << x << " ";
     }
