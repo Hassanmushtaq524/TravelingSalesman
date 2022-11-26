@@ -6,7 +6,8 @@
 using namespace std;
 
 double nextDouble(default_random_engine &generator, uniform_real_distribution<double> &distribution) {
-    return distribution(generator);
+    double num = distribution(generator);
+    return num;
 }
 
 double nodeDistance(int node1, int node2, vector<double> &x, vector<double> &y) {
@@ -17,7 +18,7 @@ double getDistance(vector<int> &route,  vector<double> &x, vector<double> &y) {
     int n = route.size();
     double d = 0;
     for (int i = 1; i < n; i++) {
-        d += nodeDistance(i-1, i, x, y);
+        d += nodeDistance(route[i-1], route[i], x, y);
     }
     return d;
 }
@@ -40,7 +41,7 @@ double Anneal(vector<int> &order,  vector<double> &x, vector<double> &y) {
     vector<int> originalOrder;
     double distance0, distance1;
     double T = 1e50;
-    double deltaT = 0.99;
+    double deltaT = 0.9999;
     double absoluteT = 0.0001;
     double difference, minDistance;
     distance0 = getDistance(currentOrder, x, y);
@@ -53,10 +54,11 @@ double Anneal(vector<int> &order,  vector<double> &x, vector<double> &y) {
         distance1 = getDistance(currentOrder, x, y);
         difference = distance1 - distance0;
         // keep new order based on a probability, otherwise revert back
-        if (difference < 0 ||  exp((-1*difference)/T) > nextDouble(generator, distribution)) {
+        if (difference < 0 ||  exp((-difference)/T) > nextDouble(generator, distribution)) {
             //  keeping new order
            distance0 = distance1;
         } else {
+            // revert
             currentOrder = originalOrder;
         }
         T *= deltaT;
@@ -83,13 +85,24 @@ void solve(ifstream &fin, ofstream &fout) {
     }
 
     // initial order is nodes 0->1...n->0
-    vector<int> order(n, 0);
-    for (int i = 0; i < n; i++) {
-        order[i] = i;
-    }
-    order.push_back(0);
+    vector<int> order;
+    
 
-    double shortestDistance = Anneal(order, x, y);
+    // we will perform 10 iterations, and restarting each time
+    double currentDistance, shortestDistance = DBL_MAX;
+    for (int i = 0; i < 10; i++) {
+        // restart
+        order.clear();
+        for (int i = 0; i < n; i++) {
+            order.push_back(i);
+        }
+        order.push_back(0);
+        currentDistance = Anneal(order, x, y);
+        if (currentDistance < shortestDistance) {
+            shortestDistance = currentDistance;
+        }
+    }
+
     fout << shortestDistance << endl;
     for (auto x : order) {
         fout << x << " ";
