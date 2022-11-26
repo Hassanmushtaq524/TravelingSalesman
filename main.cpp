@@ -41,7 +41,7 @@ double Anneal(vector<int> &order,  vector<double> &x, vector<double> &y) {
     vector<int> originalOrder;
     double distance0, distance1;
     double T = 1e50;
-    double deltaT = 0.9999;
+    double deltaT = 0.99;
     double absoluteT = 0.0001;
     double difference, minDistance;
     distance0 = getDistance(currentOrder, x, y);
@@ -68,12 +68,37 @@ double Anneal(vector<int> &order,  vector<double> &x, vector<double> &y) {
     return minDistance;
 }
 
-int shortestNode(int node, vector<double> &x, vector<double> &y) {
-    
+int shortestNode(int node, vector<int> &order, vector<double> &x, vector<double> &y) {
+    int n = x.size();
+    double min = DBL_MAX;
+    int minNode = 0;
+    double distance;
+    for (int i = 0; i < n; i++) {
+        // if node is current Node or is already in the route, then we skip
+        if (i == node || find(order.begin(), order.end(), i) != order.end()) {
+            continue;
+        }
+
+        distance = nodeDistance(node, i, x, y);
+
+        // if smaller distance found, change minNode and min
+        if (distance < min) {
+            min = distance;
+            minNode = i;
+        }
+
+    }
+    return minNode;
 }
 
 void greedyOrder(vector<int> &order, vector<double> &x, vector<double> &y) {
-
+    int n =  x.size();
+    order.clear();
+    order.push_back(0);
+    while (order.size() != n) {
+        order.push_back(shortestNode(order[order.size()-1], order, x, y));
+    }
+    order.push_back(0);
 }
 
 // Input: fin = pointer to ifstream object, fout = pointer to ofstream object
@@ -100,12 +125,13 @@ void solve(ifstream &fin, ofstream &fout) {
     double currentDistance, shortestDistance = DBL_MAX;
     // for (int i = 0; i < 10; i++) {
     //     // restart
-        order.clear();
-        for (int i = 0; i < n; i++) {
-            order.push_back(i);
-        }
-        order.push_back(0);
         greedyOrder(order, x, y);
+        fout << "greedy order: ";
+        for (auto x : order) {
+            fout << x << " ";
+        }
+        fout << endl;
+        fout << "greedy cost: " << getDistance(order, x, y) << endl;
         currentDistance = Anneal(order, x, y);
         // if (currentDistance < shortestDistance) {
         //     shortestDistance = currentDistance;
