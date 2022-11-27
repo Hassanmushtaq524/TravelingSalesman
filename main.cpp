@@ -7,7 +7,7 @@ using namespace std;
 
 // Input:
 // Output: returns the node closest to the current Node
-int minDistanceNode(int curNode, vector<double> &x, vector<double> &y, vector<int> &route, double &cost) {
+int minDistanceNode(int curNode, vector<double> &x, vector<double> &y, vector<int> &route) {
     int n = x.size();
     double min = 999999;
     int minNode = 0;
@@ -28,7 +28,6 @@ int minDistanceNode(int curNode, vector<double> &x, vector<double> &y, vector<in
         }
 
     }
-    cost += min;
     return minNode;
 }
 
@@ -45,16 +44,16 @@ double travelSales(vector<double> &x, vector<double> &y, vector<int> &route) {
 
     // loop until we reach the end
     while (route.size() != x.size()) {
-        node = minDistanceNode(node, x, y, route, cost);
+        node = minDistanceNode(route[route.size()-1], x, y, route);
         route.push_back(node);
     }
 
     // calculate final return distance
-    double distance;
-    distance = pow(x[node] - x[0], 2) + pow(y[node] - y[0], 2);
-    distance = sqrt(distance);
-    cost += distance;
     route.push_back(initialNode);
+
+    for (int i = 1; i < route.size();i++) {
+        cost += sqrt(pow(x[route[i]] - x[route[i-1]],2) + pow(y[route[i]] - y[route[i-1]],2));
+    }
     return cost; 
 }
 
