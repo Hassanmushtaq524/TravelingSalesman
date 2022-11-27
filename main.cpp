@@ -54,9 +54,9 @@ double Anneal(vector<int> &order,  vector<double> &x, vector<double> &y) {
         distance1 = getDistance(currentOrder, x, y);
         difference = distance1 - distance0;
         // keep new order based on a probability, otherwise revert back
-        if (difference < 0 ||  exp((-difference)/T) > nextDouble(generator, distribution)) {
+        if (difference < 0) {
             //  keeping new order
-           distance0 = distance1;
+            distance0 = distance1;
         } else {
             // revert
             currentOrder = originalOrder;
@@ -91,7 +91,7 @@ int shortestNode(int node, vector<int> &order, vector<double> &x, vector<double>
     return minNode;
 }
 
-void greedyOrder(vector<int> &order, vector<double> &x, vector<double> &y) {
+void greedySol(vector<int> &order, vector<double> &x, vector<double> &y) {
     int n =  x.size();
     order.clear();
     order.push_back(0);
@@ -119,26 +119,45 @@ void solve(ifstream &fin, ofstream &fout) {
 
     // initial order is nodes 0->1...n->0
     vector<int> order;
-    
+    vector<int> greedyOrder;   
+    vector<int> originalOrder; 
 
     // we will perform 10 iterations, and restarting each time
     double currentDistance, shortestDistance = DBL_MAX;
-    // for (int i = 0; i < 10; i++) {
-    //     // restart
-        greedyOrder(order, x, y);
+    if (n > 10000) {
+        for (int i = 0; i < n; i++) {
+            originalOrder.push_back(i);
+        }
+        originalOrder.push_back(0);
+        for (int i = 0; i < 10; i++) {
+            // reset
+            order = originalOrder;
+            currentDistance = Anneal(order, x, y);
+            if (currentDistance < shortestDistance) {
+                shortestDistance = currentDistance;
+            }
+        }
+    } else {
+        greedySol(greedyOrder, x, y);
         fout << "greedy order: ";
-        for (auto x : order) {
+        for (auto x : greedyOrder) {
             fout << x << " ";
         }
         fout << endl;
-        fout << "greedy cost: " << getDistance(order, x, y) << endl;
-        currentDistance = Anneal(order, x, y);
-        // if (currentDistance < shortestDistance) {
-        //     shortestDistance = currentDistance;
-        // }
-    // }
+        fout << "greedy cost: " << getDistance(greedyOrder, x, y) << endl;
+        for (int i = 0; i < 10; i++) {
+            // reset
+            order = greedyOrder;
+            currentDistance = Anneal(order, x, y);
+            if (currentDistance < shortestDistance) {
+                shortestDistance = currentDistance;
+            }
+        }
+    }
+    
+  
 
-    fout << currentDistance << endl;
+    fout << shortestDistance << endl;
     for (auto x : order) {
         fout << x << " ";
     }
@@ -165,25 +184,25 @@ int main () {
     ifstream fin;
     ofstream fout;   
     string inFile, outFile;       
-    // for (auto file : files) {
-    //     if (file == "." || file == "..")
-    //         continue;
-    //     cout << file << " "; 
-    //     inFile = "./inputs/" + file;
-    //     fin.open(inFile.data(), ios::in);
-    //     outFile = "./outputs/" + file + "_out"; 
-    //     fout.open(outFile.data(), ios::out);
-    //     solve(fin, fout);
-    //     fin.close();
-    //     fout.close();
-    // }
-    inFile = "./inputs/sampleInput";
+    for (auto file : files) {
+        if (file == "." || file == "..")
+            continue;
+        cout << file << " "; 
+        inFile = "./inputs/" + file;
         fin.open(inFile.data(), ios::in);
-        outFile = "./outputs/sampleInput_out"; 
+        outFile = "./outputs/" + file + "_out"; 
         fout.open(outFile.data(), ios::out);
         solve(fin, fout);
         fin.close();
         fout.close();
+    }
+    // inFile = "./inputs/sampleInput";
+    //     fin.open(inFile.data(), ios::in);
+    //     outFile = "./outputs/sampleInput_out"; 
+    //     fout.open(outFile.data(), ios::out);
+    //     solve(fin, fout);
+    //     fin.close();
+    //     fout.close();
     
     
     
